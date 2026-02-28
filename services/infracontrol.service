@@ -1,0 +1,12 @@
+[Unit]
+Description=InfraControl Dashboard Backend
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/InfraControl
+ExecStart=/usr/bin/python3 backend/app.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+{
+    "nodes": [
+        {
+            "id": "proxmox",
+            "hostname": "proxmox.homeserver",
+            "ip": "192.168.1.10",
+            "url": "https://proxmox.homelabpc.qzz.io"
+        },
+        {
+            "id": "controlnode",
+            "hostname": "controlnode.homeserver",
+            "ip": "192.168.1.11",
+            "url": "https://controlnode.homelabpc.qzz.io"
+        },
+        {
+            "id": "server1",
+            "hostname": "server1.homeserver",
+            "ip": "192.168.1.21",
+            "url": "https://server1.homelabpc.qzz.io"
+        },
+        {
+            "id": "server2",
+            "hostname": "server2.homeserver",
+            "ip": "192.168.1.22",
+            "url": "https://server2.homelabpc.qzz.io"
+        },
+        {
+            "id": "database",
+            "hostname": "database.homeserver",
+            "ip": "192.168.1.23",
+            "url": "https://database.homelabpc.qzz.io"
+        },
+        {
+            "id": "loadbalancer",
+            "hostname": "loadbalancer.homeserver",
+            "ip": "192.168.1.12",
+            "url": "https://loadbalancer.homelabpc.qzz.io"
+        }
+    ],
+    "cluster_nodes": [
+        "server1",
+        "server2"
+    ],
+    "domains": [
+        "server1.homelabpc.qzz.io",
+        "server2.homelabpc.qzz.io",
+        "jenkins.homelabpc.qzz.io",
+        "controlnode.homelabpc.qzz.io",
+        "database.homelabpc.qzz.io",
+        "loadbalancer.homelabpc.qzz.io",
+        "grafana.homelabpc.qzz.io",
+        "cluster.homelabpc.qzz.io",
+        "proxmox.homelabpc.qzz.io",
+        "portfolio.apphost.qzz.io",
+        "apexcorp-bank.apphost.qzz.io"
+    ],
+    "users": [
+        {
+            "username": "admin",
+            "role": "Administrator",
+            "password": "admin"
+        }
+    ]
+}

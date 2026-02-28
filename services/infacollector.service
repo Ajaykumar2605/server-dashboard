@@ -1,0 +1,11 @@
+[Unit]
+Description=InfraControl Collector Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/InfraControl/backend/infacollector.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraControl - Monitoring Dashboard</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- PyScript for the "py" frontend requirement -->
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-bolt-lightning" style="color: var(--accent-blue);"></i>
+            <span style="font-weight: 800; letter-spacing: -0.5px; font-size: 1.2rem;">InfraControl</span>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-item active" data-view="view-infra" title="Overview">
+                <i class="fa-solid fa-server"></i>
+                <span class="nav-label">Overview</span>
+            </div>
+            <div class="nav-item" data-view="view-cluster" title="HA Cluster">
+                <i class="fa-solid fa-network-wired"></i>
+                <span class="nav-label">HA Cluster</span>
+            </div>
+            <div class="nav-item" data-view="view-websites" title="Websites">
+                <i class="fa-solid fa-globe"></i>
+                <span class="nav-label">Websites</span>
+            </div>
+            <div class="nav-item" data-view="view-monitoring" title="Monitoring">
+                <i class="fa-solid fa-chart-line"></i>
+                <span class="nav-label">Monitoring</span>
+            </div>
+            <div class="nav-item" data-view="view-account" title="Account">
+                <i class="fa-solid fa-user-gear"></i>
+                <span class="nav-label">Account</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="login.html" id="link-logout" class="nav-item" title="Logout" style="padding: 1rem 1.5rem;">
+                <i class="fa-solid fa-right-from-bracket" style="color: var(--accent-red);"></i>
+                <span class="nav-label">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Red Alert Banner -->
+        <div id="alert-banner" class="alert-banner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="alert-msg">CRITICAL: Server Offline</span>
+        </div>
+
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <div class="brand-nav flex items-center gap-2">
+                    <i class="fa-solid fa-bolt-lightning" style="color: var(--accent-blue);"></i>
+                    <span style="font-weight: 800; letter-spacing: -0.5px; font-size: 1.25rem;">InfraControl</span>
+                </div>
+                <div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 5px;"></div>
+                <h2 id="view-title"
+                    style="font-weight: 600; font-size: 0.95rem; color: var(--text-muted); white-space: nowrap;">
+                    Infrastructure Overview</h2>
+            </div>
+            <div class="nav-actions">
+                <div id="live-clock" class="text-muted" style="font-family: monospace; font-size: 13px;">--:--:--</div>
+                <div class="status-light-container" title="System Status Indicator">
+                    <span id="system-status-light" class="status-light status-light-green"></span>
+                    <span id="last-update-nav" class="text-muted" style="font-size: 11px; font-family: monospace;">just
+                        now</span>
+                </div>
+                <div class="notification-bell" id="notification-bell">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-count" id="notification-count">0</span>
+                    <div class="notification-dropdown" id="notification-dropdown">
+                        <div class="notification-header">
+                            <span>Notifications</span>
+                            <span class="text-muted" style="font-size: 11px; cursor: pointer;"
+                                id="btn-clear-alerts">Clear All</span>
+                        </div>
+                        <div class="notification-list" id="notification-list">
+                            <div class="notification-empty">No active alerts</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-toggle" id="theme-toggle">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <div class="user-profile flex items-center gap-2"
+                    style="cursor: pointer; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.05);">
+                    <i class="fa-solid fa-circle-user" style="font-size: 1.1rem; color: var(--accent-blue);"></i>
+                    <span id="nav-username" style="font-size: 13px; font-weight: 600;">Admin</span>
+                </div>
+                <!-- Menu Toggle on far right -->
+                <button id="menu-toggle" class="btn btn-icon" title="Toggle Menu" style="margin-left: 5px;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- 1. Infrastructure View -->
+            <section id="view-infra" class="view-section active">
+                <div class="grid" id="grid-servers">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+            <!-- 2. HA Cluster View -->
+            <section id="view-cluster" class="view-section">
+                <!-- Cluster Top Metrics Header -->
+                <div class="grid"
+                    style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                    <div class="card" style="border-left: 4px solid var(--accent-green);">
+                        <div class="metric-item">
+                            <i class="fa-solid fa-heartbeat" style="color: var(--accent-green);"></i>
+                            <span>System Health</span>
+                            <span class="usage-value" id="cluster-health-text"
+                                style="color: var(--accent-green); font-weight: 800;">Health OK</span>
+                        </div>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--accent-blue);">
+                        <div class="metric-item">
+                            <i class="fa-solid fa-network-wired" style="color: var(--accent-blue);"></i>
+                            <span>Cluster IP</span>
+                            <span class="usage-value" id="cluster-ip-text">--.---.---.--</span>
+                        </div>
+                    </div>
+                    <div class="card" style="border-left: 4px solid var(--accent-yellow);">
+                        <div class="metric-item">
+                            <i class="fa-solid fa-gauge-high" style="color: var(--accent-yellow);"></i>
+                            <span>Shared Load</span>
+                            <span class="usage-value" id="cluster-load-text">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cluster Services Card Layout -->
+                <h3
+                    style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+                    Cluster Services</h3>
+                <div class="grid"
+                    style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 2rem;">
+                    <div class="card service-card">
+                        <div class="card-title">
+                            <span><i class="fa-solid fa-shield-halved"></i> Corosync</span>
+                            <span class="badge" id="status-corosync-badge">Active/Enabled</span>
+                        </div>
+                        <div class="metric-item"
+                            style="font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-check-double"></i> <span>Consistency Loop</span> <span
+                                class="usage-value">Synced</span>
+                        </div>
+                    </div>
+                    <div class="card service-card">
+                        <div class="card-title">
+                            <span><i class="fa-solid fa-brain"></i> Pacemaker</span>
+                            <span class="badge" id="status-pacemaker-badge">Active/Enabled</span>
+                        </div>
+                        <div class="metric-item"
+                            style="font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-list-check"></i> <span>Resource Manager</span> <span
+                                class="usage-value">Managed</span>
+                        </div>
+                    </div>
+                    <div class="card service-card">
+                        <div class="card-title">
+                            <span><i class="fa-solid fa-wrench"></i> PCSD</span>
+                            <span class="badge" id="status-pcsd-badge">Active/Enabled</span>
+                        </div>
+                        <div class="metric-item"
+                            style="font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-rocket"></i> <span>Admin API</span> <span
+                                class="usage-value">Listening</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Node Infrastructure Row -->
+                <h3
+                    style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+                    HA Cluster Nodes</h3>
+                <div class="grid" id="grid-cluster">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+            <!-- 3. Websites View -->
+            <section id="view-websites" class="view-section">
+                <div class="flex justify-between items-center mb-2" style="margin-bottom: 2rem;">
+                    <h3>Managed Domains</h3>
+                    <button class="btn btn-primary" id="btn-add-domain">
+                        <i class="fa-solid fa-plus"></i> Add Domain
+                    </button>
+                </div>
+                <div class="grid" id="grid-websites">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+            <!-- 4. Monitoring View -->
+            <section id="view-monitoring" class="view-section">
+                <div class="monitoring-grid">
+                    <div class="monitoring-card" style="--card-accent: #00a4ff;">
+                        <i class="fa-solid fa-terminal"></i>
+                        <div class="card-title">Cockpit</div>
+                        <p>Centralized web-based interface for server administration & monitoring.</p>
+                        <button class="btn" id="btn-view-cockpit">Manage Servers</button>
+                    </div>
+                    <div class="monitoring-card" style="--card-accent: #D24939;">
+                        <i class="fa-brands fa-jenkins"></i>
+                        <div class="card-title">Jenkins</div>
+                        <p>Automation server for CI/CD pipelines and deployment management.</p>
+                        <a href="https://jenkins.homelabpc.qzz.io" target="_blank" class="btn">Open Jenkins</a>
+                    </div>
+                    <div class="monitoring-card" style="--card-accent: #41bdf5;">
+                        <i class="fa-solid fa-cloud"></i>
+                        <div class="card-title">OwnCloud</div>
+                        <p>Secure cloud storage and file synchronization for your private network.</p>
+                        <a href="#" target="_blank" class="btn">Open Cloud</a>
+                    </div>
+                    <div class="monitoring-card" style="--card-accent: #f48020;">
+                        <i class="fa-brands fa-cloudflare"></i>
+                        <div class="card-title">Cloudflare</div>
+                        <p>Enhanced security, DDoS protection, and CDN acceleration status.</p>
+                        <a href="https://dash.cloudflare.com" target="_blank" class="btn">CDN Status</a>
+                    </div>
+                    <div class="monitoring-card" style="--card-accent: #26A5E4;">
+                        <i class="fa-brands fa-telegram"></i>
+                        <div class="card-title">Telegram</div>
+                        <p>Instant alert notifications and remote management via private bot.</p>
+                        <a href="https://t.me/Servers_AlertsBot" target="_blank" class="btn">Alerts Bot</a>
+                    </div>
+                    <div class="monitoring-card" style="--card-accent: #f46800;">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <div class="card-title">Grafana</div>
+                        <p>Advanced metrics visualization and real-time observability dashboards.</p>
+                        <a href="https://grafana.homelabpc.qzz.io" target="_blank" class="btn">View Metrics</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Account View -->
+            <section id="view-account" class="view-section">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <div class="card-title"><i class="fa-solid fa-user-shield"></i> Account Settings</div>
+                    <div style="margin-top: 2rem;">
+                        <div class="metric-row" style="padding: 1rem 0; border-bottom: 1px solid var(--border-color);">
+                            <span class="text-muted">Username</span>
+                            <span id="account-username" style="font-weight: 600;">admin</span>
+                        </div>
+                        <div class="metric-row" style="padding: 1rem 0; border-bottom: 1px solid var(--border-color);">
+                            <span class="text-muted">Role</span>
+                            <span class="badge"
+                                style="background: rgba(0, 164, 255, 0.1); color: var(--accent-blue);">Administrator</span>
+                        </div>
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                            <h4 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-users-gear"></i> User Management
+                            </h4>
+
+                            <div class="flex gap-2" style="margin-bottom: 1.5rem;">
+                                <input type="text" id="new-username" placeholder="New Username" class="input-modern"
+                                    style="flex: 1;">
+                                <select id="new-user-role" class="input-modern" style="width: 140px;">
+                                    <option value="Viewer">Viewer</option>
+                                    <option value="Administrator">Administrator</option>
+                                </select>
+                                <button class="btn btn-primary" id="btn-add-user"><i
+                                        class="fa-solid fa-user-plus"></i></button>
+                            </div>
+
+                            <div id="user-list-container">
+                                <!-- User list injected by JS -->
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                            <h4 style="margin-bottom: 1rem;"><i class="fa-solid fa-key"></i> Change Password</h4>
+                            <input type="password" id="old-pass" placeholder="Current Password" class="input-modern"
+                                style="margin-bottom: 0.5rem;">
+                            <input type="password" id="new-pass" placeholder="New Password" class="input-modern"
+                                style="margin-bottom: 1rem;">
+                            <button class="btn btn-primary" id="btn-change-pass" style="width: 100%;">Update
+                                Password</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <div class="flex justify-center items-center">
+                <div class="text-muted" style="font-size: 11px; text-align: center;">
+                    &copy; 2026 InfraControl &bull; Designed by <span style="color: var(--accent-blue);">HomeServer
+                        Team</span> &bull; All Rights Reserved
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Modal for adding domain -->
+    <div class="modal" id="modal-domain">
+        <div class="modal-content">
+            <h3 id="modal-domain-title" style="margin-bottom: 1rem;">Add New Domain</h3>
+            <input type="hidden" id="input-old-domain">
+            <input type="text" id="input-domain" placeholder="example.com"
+                style="width: 100%; padding: 0.75rem; margin-bottom: 1.5rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px;">
+            <div class="flex justify-between">
+                <button class="btn" id="btn-close-modal">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-domain">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Cockpit Servers -->
+    <div class="modal" id="modal-cockpit">
+        <div class="modal-content" style="width: 800px;">
+            <div class="modal-header">
+                <h3>Select Server Console</h3>
+                <span class="modal-close" id="btn-close-cockpit">&times;</span>
+            </div>
+            <div id="cockpit-grid" class="monitoring-grid"
+                style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic in Python (PyScript) -->
+    <div style="display: none !important; isolation: isolate;">
+        <py-script>
+            import json
+
+            async def calculate_health_score(data_json):
+            """Calculates a health score based on online servers."""
+            try:
+            data = json.loads(data_json)
+            servers = data.get('servers', [])
+            if not servers: return 100
+            online = sum(1 for s in servers if s['status'] == 'online')
+            score = int((online / len(servers)) * 100)
+            return score
+            except Exception as e:
+            return 0
+
+            # For demonstration: exposing a function to JS
+            from js import window
+            window.PyCalcHealth = calculate_health_score
+        </py-script>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

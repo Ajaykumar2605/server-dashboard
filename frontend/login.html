@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraControl - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: var(--bg-main);
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 3rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        #login-error {
+            color: var(--accent-red);
+            font-size: 0.85rem;
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fa-solid fa-microchip"></i>
+            <h2 style="margin-bottom: 0.5rem;">InfraControl</h2>
+            <p class="text-muted" style="margin-bottom: 2.5rem;">Secure Access Gateway</p>
+        </div>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="password" required>
+            </div>
+            <div id="login-error">Invalid credentials. Access Denied.</div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 600;">
+                Login to Dashboard
+
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    sessionStorage.setItem('infra_auth', 'true');
+                    sessionStorage.setItem('infra_user', data.username);
+                    sessionStorage.setItem('infra_role', data.role);
+                    window.location.href = 'index.html';
+                } else {
+                    errorDiv.innerText = data.message || "Invalid credentials.";
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.innerText = "Connection failed. Is the backend running?";
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Auto redirect if already logged in
+        if (sessionStorage.getItem('infra_auth') === 'true') {
+            window.location.href = 'index.html';
+        }
+    </script>
+    <footer class="footer"
+        style="position: absolute; bottom: 0; width: 100%; border: none; padding: 1.5rem; background: transparent; display: flex; justify-content: center; z-index: 10;">
+        <div class="footer-content">
+            <p class="text-muted" style="font-size: 0.9rem;">&copy; 2026 InfraControl &bull; Designed by HomeServer Team </p>
+        </div>
+    </footer>
+</body>
+
+</html>
